@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full w-full overflow-hidden select-none">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ekonomi Yahud - Edukasi IPAS Fase C (Kelas 5 SD)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            yahud: {
+              yellow: '#FACC15',
+              amber: '#D97706',
+              green: '#10B981',
+              darkgreen: '#047857',
+              blue: '#2563EB',
+              navy: '#0F172A',
+              coral: '#F43F5E',
+              cream: '#FEF9C3'
+            }
+          },
+          fontFamily: {
+            sans: ['Fredoka', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Google Fonts: Fredoka untuk Keterbacaan Kontras Tinggi dari Bangku Belakang -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       PENGUNCIAN VIEWPORT MUTLAK: 100% SATU LAYAR (ZERO-SCROLL SMARTBOARD IFP)
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden !important;
+      overscroll-behavior: none;
+      position: fixed;
+      inset: 0;
+      font-family: 'Fredoka', sans-serif;
+      background: radial-gradient(circle at 50% 20%, #0284c7 0%, #0369a1 45%, #082f49 100%);
+    }
+
+    /* Respon Sentuhan Haptik Visual Layar Lebar */
+    .btn-bounce {
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+      cursor: pointer;
+    }
+    .btn-bounce:active {
+      transform: scale(0.96);
+      filter: brightness(0.95);
+    }
+
+    /* Kartu Seret dan Drop Zone */
+    .draggable-card {
+      touch-action: none;
+      cursor: grab;
+    }
+    .draggable-card:active {
+      cursor: grabbing;
+      transform: scale(1.02);
+    }
+    .drop-zone.dragover {
+      border-color: #facc15 !important;
+      background-color: rgba(254, 240, 138, 0.45) !important;
+      transform: scale(1.01);
+    }
+
+    /* Animasi Maskot Ringan */
+    @keyframes mascotBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    .mascot-hop {
+      animation: mascotBob 1.8s infinite ease-in-out;
+    }
+
+    #drawingCanvas {
+      touch-action: none;
+      cursor: crosshair;
+    }
+  </style>
+</head>
+
+<body class="text-slate-800 flex flex-col justify-between h-screen h-[100dvh] w-screen p-1 sm:p-2 overflow-hidden">
+
+  <!-- Header Navigasi IFP Kompak (Tinggi Terkunci, Tidak Memicu Scroll) -->
+  <header class="w-full bg-white/95 backdrop-blur-md rounded-xl shadow-md px-2.5 py-1 flex items-center justify-between border-2 border-yellow-400 z-30 shrink-0 h-10 sm:h-12">
+    <div class="flex items-center gap-2">
+      <div id="headerMascot" class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-tr from-amber-500 to-yellow-300 rounded-lg flex items-center justify-center shadow text-base sm:text-lg border-2 border-white mascot-hop shrink-0">
+        🤠
+      </div>
+      <div class="leading-none">
+        <div class="flex items-center gap-1.5">
+          <h1 class="text-xs sm:text-base font-black tracking-wide text-amber-950">EKONOMI YAHUD</h1>
+          <span class="bg-amber-100 text-amber-900 text-[9px] px-1.5 py-0.5 rounded-full font-bold border border-amber-300 hidden md:inline">IPAS Fase C Kelas 5</span>
+        </div>
+        <p class="text-[8px] sm:text-[10px] font-bold text-slate-500 hidden sm:block">Karya: Arga Widyatama • Rantai & Solusi Ekonomi Daerah</p>
+      </div>
+    </div>
+
+    <!-- Status Bar Giliran Tim, Hati, Timer, & Tombol Cepat -->
+    <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+      <!-- Status Giliran Tim / Target Klasikal -->
+      <div id="teamTurnIndicator" class="hidden px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs border shadow-sm">
+        <!-- Terisi via JS -->
+      </div>
+
+      <!-- Nyawa (Kesempatan 3 Hati) -->
+      <div id="heartsContainer" class="hidden bg-red-50 border border-red-300 px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-black text-red-600 flex items-center gap-0.5">
+        <span>❤️</span>
+        <span id="heartsText">3/3</span>
+      </div>
+
+      <!-- Timer Sesi Permainan -->
+      <div id="timerContainer" class="hidden bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-black text-amber-900 flex items-center gap-0.5">
+        <span>⏱️</span>
+        <span id="timerText">01:30</span>
+      </div>
+
+      <!-- Tombol AI Tanya Pakar Ekonomi -->
+      <button onclick="Game.openAiModal()" class="btn-bounce bg-purple-100 hover:bg-purple-200 text-purple-900 border border-purple-400 font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md text-[10px] sm:text-xs flex items-center gap-1" title="Tanya Pakar Ekonomi AI">
+        <span>🤖</span>
+        <span class="hidden lg:inline">Tanya AI</span>
+      </button>
+
+      <!-- Sakelar Musik Gamelan Sintetis & SFX -->
+      <button id="btnAudioToggle" class="btn-bounce bg-yellow-100 hover:bg-yellow-200 text-amber-900 border border-amber-400 font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md text-[10px] sm:text-xs flex items-center gap-1" title="Nyalakan/Matikan Musik Gamelan">
+        <span id="audioIcon">🔊</span>
+        <span class="hidden lg:inline">Gamelan</span>
+      </button>
+
+      <!-- Modal Panduan Guru / CP -->
+      <button id="btnHelpModal" class="btn-bounce bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-400 font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md text-[10px] sm:text-xs flex items-center gap-1" title="Panduan Pembelajaran & Capaian">
+        <span>📖</span>
+        <span class="hidden lg:inline">Panduan</span>
+      </button>
+
+      <!-- Tombol Kembali ke Beranda -->
+      <button id="btnHome" class="btn-bounce bg-red-100 hover:bg-red-200 text-red-900 border border-red-400 font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md text-[10px] sm:text-xs flex items-center gap-1" title="Kembali ke Menu Utama">
+        <span>🏠</span>
+        <span class="hidden lg:inline">Menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Kontainer Utama Permainan (Terkunci Bebas Scroll) -->
+  <main id="gameContainer" class="relative flex-1 w-full my-1 rounded-xl bg-white/95 backdrop-blur-md shadow-lg border-2 border-yellow-300 overflow-hidden flex flex-col min-h-0">
+
+    <!-- ================= SCREEN 1: TITLE & PILIHAN 3 MODE ================= -->
+    <section id="screenTitle" class="h-full w-full flex flex-col justify-between items-center text-center p-2 sm:p-3 overflow-hidden">
+      <!-- Judul & Pengantar -->
+      <div class="my-auto w-full max-w-4xl flex flex-col items-center">
+        <div class="inline-block bg-yellow-300 text-amber-950 font-black px-3 py-0.5 rounded-full text-[10px] sm:text-xs mb-1 shadow-sm border border-yellow-500 uppercase tracking-wider">
+          Game Interaktif Smartboard / IFP • Fase C Kelas 5 SD
+        </div>
+        <h2 class="text-xl sm:text-3xl font-black text-amber-950 tracking-tight flex items-center justify-center gap-1.5">
+          <span>🛒</span> EKONOMI YAHUD! <span>🌾</span>
+        </h2>
+        <p class="text-[11px] sm:text-xs text-slate-700 font-bold mt-0.5 max-w-lg leading-tight">
+          Selidiki rantai kebutuhan warga, atasi masalah distribusi, dan bangun kemakmuran desa!
+        </p>
+
+        <!-- 3 Pilihan Mode Bermain (Tombol Lebar Sentuhan IFP) -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-3 mt-2 sm:mt-3 w-full max-w-3xl">
+          <!-- Mode 1: Individu -->
+          <button onclick="Game.selectMode('INDIVIDU')" class="btn-bounce group relative bg-gradient-to-b from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-2 border-blue-500 rounded-xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center shadow">
+            <span class="text-2xl sm:text-3xl">🧒</span>
+            <div class="my-0.5">
+              <span class="text-xs sm:text-sm font-black text-blue-950 block">1. Individu</span>
+              <span class="text-[9px] sm:text-[10px] font-semibold text-blue-800 line-clamp-1">Maju bergantian ke layar</span>
+            </div>
+            <div class="bg-blue-600 text-white font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow">Pilih ➔</div>
+          </button>
+
+          <!-- Mode 2: Kelompok (Kompetisi 4 Tim) -->
+          <button onclick="Game.selectMode('KELOMPOK')" class="btn-bounce group relative bg-gradient-to-b from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 border-2 border-amber-500 rounded-xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center shadow ring-2 ring-amber-400">
+            <div class="absolute -top-1.5 right-1.5 bg-red-500 text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase shadow">Favorit</div>
+            <span class="text-2xl sm:text-3xl">👥</span>
+            <div class="my-0.5">
+              <span class="text-xs sm:text-sm font-black text-amber-950 block">2. Kelompok</span>
+              <span class="text-[9px] sm:text-[10px] font-semibold text-amber-900 line-clamp-1">4 Tim Bertanding</span>
+            </div>
+            <div class="bg-amber-600 text-white font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow">Tanding ➔</div>
+          </button>
+
+          <!-- Mode 3: Klasikal (Seluruh Kelas Bersama) -->
+          <button onclick="Game.selectMode('KLASIKAL')" class="btn-bounce group relative bg-gradient-to-b from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border-2 border-emerald-500 rounded-xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center shadow">
+            <span class="text-2xl sm:text-3xl">🏫</span>
+            <div class="my-0.5">
+              <span class="text-xs sm:text-sm font-black text-emerald-950 block">3. Klasikal</span>
+              <span class="text-[9px] sm:text-[10px] font-semibold text-emerald-900 line-clamp-1">Satu Kelas Kompak</span>
+            </div>
+            <div class="bg-emerald-600 text-white font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow">Bersama ➔</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer Info Bar Title -->
+      <div class="w-full bg-amber-50 border border-amber-300 rounded-lg py-1 px-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-700 font-bold shrink-0">
+        <span>🎯 <strong>Materi:</strong> Rantai Produksi, Distribusi, Konsumsi & Solusi Ekonomi</span>
+        <span>👨‍🏫 <strong>Pengembang:</strong> Arga Widyatama (Fase C SD)</span>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 2: HOOK & INTRO CERITA ================= -->
+    <section id="screenIntro" class="hidden h-full w-full flex flex-col justify-between items-center p-2 sm:p-3 overflow-hidden">
+      <div class="max-w-3xl mx-auto w-full my-auto flex flex-col items-center">
+        <div class="bg-amber-100 text-amber-900 font-black px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs border border-amber-400 mb-1 shadow-sm">
+          🌾 Cerita Masalah: Selamatkan Perekonomian Desa Sukamaju!
+        </div>
+
+        <div class="grid grid-cols-12 gap-2 items-center bg-yellow-50 p-2 sm:p-2.5 rounded-xl border-2 border-yellow-400 shadow-sm w-full">
+          <div class="col-span-3 flex flex-col items-center justify-center">
+            <div class="text-3xl sm:text-4xl mascot-hop">🚜📦🍲</div>
+            <div class="text-[8px] sm:text-[9px] font-black text-amber-900 mt-1 bg-yellow-200 px-1.5 py-0.5 rounded border border-yellow-400 text-center leading-none">
+              Rantai Putus!
+            </div>
+          </div>
+          <div class="col-span-9 text-left space-y-0.5">
+            <h3 class="text-xs sm:text-sm font-black text-slate-800 leading-tight">
+              Bagaimana Kebutuhan Warga Dapat Terpenuhi?
+            </h3>
+            <p class="text-[10px] sm:text-xs text-slate-700 font-semibold leading-snug">
+              Panen melimpah (<strong>Produksi</strong>), tetapi kendala di jalan menghambat pengiriman (<strong>Distribusi</strong>), harga anjlok, dan warga memerlukan solusi cerdas (<strong>Konsumsi</strong>)!
+            </p>
+            <div class="bg-white p-1 rounded-md border border-yellow-400 font-bold text-[9px] sm:text-[10px] text-amber-950 flex items-center gap-1">
+              <span>💡</span>
+              <span><strong>Misi IFP (6 Skenario Diacak):</strong> 1) Susun Alur Rantai Ekonomi, 2) Pilih Solusi Cerdas, 3) Petakan di Layar!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Instruksi Aturan Main Singkat -->
+        <div class="grid grid-cols-3 gap-1.5 sm:gap-2 w-full mt-2">
+          <div class="bg-blue-50 border border-blue-400 p-1 sm:p-1.5 rounded-lg text-center">
+            <div class="text-base sm:text-lg">🖐️ Seret / Sentuh</div>
+            <p class="text-[9px] font-bold text-blue-950 leading-tight">Kelompokkan alur kegiatan.</p>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-400 p-1 sm:p-1.5 rounded-lg text-center">
+            <div class="text-base sm:text-lg">👆 Pilih Solusi</div>
+            <p class="text-[9px] font-bold text-emerald-950 leading-tight">Pecahkan persoalan desa.</p>
+          </div>
+          <div class="bg-purple-50 border border-purple-400 p-1 sm:p-1.5 rounded-lg text-center">
+            <div class="text-base sm:text-lg">✏️ Gambar di IFP</div>
+            <p class="text-[9px] font-bold text-purple-950 leading-tight">Hubungkan alur & tulis ide.</p>
+          </div>
+        </div>
+
+        <button onclick="Game.startMission1()" class="btn-bounce mt-2 sm:mt-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black text-xs sm:text-base px-6 py-1.5 rounded-xl shadow-md border border-emerald-300 flex items-center gap-1.5">
+          <span>GAS KAN MISI 1!</span> 🚀
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 3: MISI 1 (DRAG & DROP / TAP TO PLACE - 6+ SKENARIO & KARTU BANYAK) ================= -->
+    <section id="screenMission1" class="hidden h-full w-full flex flex-col justify-between p-1.5 sm:p-2 overflow-hidden">
+      <!-- Top Info Bar Misi 1 -->
+      <div class="flex items-center justify-between border-b border-amber-200 pb-1 shrink-0 h-7 sm:h-8">
+        <div>
+          <span class="bg-blue-600 text-white font-bold text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full uppercase">Misi 1 / 3: Alur Rantai (6 Skenario Diacak)</span>
+          <h3 class="text-xs sm:text-sm font-black text-slate-800 leading-tight inline ml-1">Susun Kegiatan Ekonomi</h3>
+        </div>
+        <div class="flex items-center gap-1 sm:gap-2">
+          <div class="bg-amber-100 text-amber-900 border border-amber-400 px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs">
+            ⭐ Skor: <span id="currentScoreDisplay" class="text-blue-700">0</span>
+          </div>
+          <div class="bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs">
+            Skenario: <span id="m1RoundDisplay">1/6</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skenario Kasus Singkat -->
+      <div id="m1ScenarioBanner" class="bg-blue-50 border border-blue-300 rounded-lg py-1 px-2 my-1 text-center text-[10px] sm:text-xs font-bold text-blue-950 shadow-inner shrink-0 truncate">
+        <!-- Terisi via JS -->
+      </div>
+
+      <!-- 3 Wadah Drop Zones Berukuran Proporsional Tanpa Scroll -->
+      <div class="grid grid-cols-3 gap-1.5 sm:gap-2 flex-1 min-h-0 my-0.5">
+        <!-- Wadah 1: Produksi -->
+        <div data-target-category="PRODUKSI" class="drop-zone bg-gradient-to-b from-amber-50 to-orange-100 border-2 border-dashed border-amber-500 rounded-xl p-1.5 flex flex-col justify-between min-h-0 transition-all">
+          <div class="text-center shrink-0 leading-tight">
+            <span class="text-base sm:text-xl leading-none">🏭</span>
+            <h4 class="text-[10px] sm:text-xs font-black text-amber-950 uppercase">1. PRODUKSI</h4>
+            <p class="text-[8px] sm:text-[9px] font-bold text-amber-800">Membuat Barang</p>
+          </div>
+          <div class="zone-slot w-full flex-1 bg-white/85 rounded-lg flex flex-col gap-1 items-center justify-center p-1 border border-amber-200 mt-1 overflow-y-auto">
+            <span class="placeholder-text text-[9px] font-bold text-amber-500 text-center m-auto leading-tight">Ketuk/Seret ke sini</span>
+          </div>
+        </div>
+
+        <!-- Wadah 2: Distribusi -->
+        <div data-target-category="DISTRIBUSI" class="drop-zone bg-gradient-to-b from-blue-50 to-indigo-100 border-2 border-dashed border-blue-500 rounded-xl p-1.5 flex flex-col justify-between min-h-0 transition-all">
+          <div class="text-center shrink-0 leading-tight">
+            <span class="text-base sm:text-xl leading-none">🚚</span>
+            <h4 class="text-[10px] sm:text-xs font-black text-blue-950 uppercase">2. DISTRIBUSI</h4>
+            <p class="text-[8px] sm:text-[9px] font-bold text-blue-800">Menyalurkan Barang</p>
+          </div>
+          <div class="zone-slot w-full flex-1 bg-white/85 rounded-lg flex flex-col gap-1 items-center justify-center p-1 border border-blue-200 mt-1 overflow-y-auto">
+            <span class="placeholder-text text-[9px] font-bold text-blue-500 text-center m-auto leading-tight">Ketuk/Seret ke sini</span>
+          </div>
+        </div>
+
+        <!-- Wadah 3: Konsumsi -->
+        <div data-target-category="KONSUMSI" class="drop-zone bg-gradient-to-b from-emerald-50 to-green-100 border-2 border-dashed border-emerald-500 rounded-xl p-1.5 flex flex-col justify-between min-h-0 transition-all">
+          <div class="text-center shrink-0 leading-tight">
+            <span class="text-base sm:text-xl leading-none">🍽️</span>
+            <h4 class="text-[10px] sm:text-xs font-black text-emerald-950 uppercase">3. KONSUMSI</h4>
+            <p class="text-[8px] sm:text-[9px] font-bold text-emerald-800">Memakai Nilai Barang</p>
+          </div>
+          <div class="zone-slot w-full flex-1 bg-white/85 rounded-lg flex flex-col gap-1 items-center justify-center p-1 border border-emerald-200 mt-1 overflow-y-auto">
+            <span class="placeholder-text text-[9px] font-bold text-emerald-500 text-center m-auto leading-tight">Ketuk/Seret ke sini</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wadah Kartu Aktivitas (Banyak Pilihan & Pengecoh) -->
+      <div class="bg-yellow-100/90 p-1 sm:p-1.5 rounded-lg border border-yellow-400 shrink-0 my-0.5">
+        <div id="m1CardsContainer" class="flex flex-wrap gap-1 justify-center items-center max-h-[75px] overflow-y-auto">
+          <!-- Terisi via JS -->
+        </div>
+      </div>
+
+      <!-- Tombol Aksi Bawah Misi 1 -->
+      <div class="flex justify-between items-center pt-1 border-t border-slate-200 shrink-0">
+        <button onclick="Game.resetCurrentMission1()" class="btn-bounce bg-slate-200 hover:bg-slate-300 text-slate-800 font-black px-3 py-1 rounded-lg text-[10px] sm:text-xs border border-slate-400">
+          🔄 Tata Ulang
+        </button>
+        <button id="btnCheckMission1" onclick="Game.checkMission1()" class="btn-bounce bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white font-black text-[11px] sm:text-xs px-5 py-1 rounded-xl shadow border border-blue-400">
+          Periksa Jawaban ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 4: MISI 2 (TAP-TO-SELECT MASALAH EKONOMI) ================= -->
+    <section id="screenMission2" class="hidden h-full w-full flex flex-col justify-between p-1.5 sm:p-2 overflow-hidden">
+      <!-- Header Misi 2 -->
+      <div class="flex items-center justify-between border-b border-amber-200 pb-1 shrink-0 h-7 sm:h-8">
+        <div>
+          <span class="bg-amber-600 text-white font-bold text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full uppercase">Misi 2 / 3: Solusi Masalah</span>
+          <h3 class="text-xs sm:text-sm font-black text-slate-800 leading-tight inline ml-1">Pecahkan Masalah Daerah</h3>
+        </div>
+        <div class="flex items-center gap-1 sm:gap-2">
+          <div class="bg-amber-100 text-amber-900 border border-amber-400 px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs">
+            ⭐ Skor: <span id="m2ScoreDisplay" class="text-blue-700">0</span>
+          </div>
+          <div class="bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs">
+            Kasus: <span id="m2RoundCounter">1/4</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kartu Kasus Masalah di Daerah -->
+      <div class="my-auto max-w-2xl mx-auto w-full flex flex-col justify-center">
+        <div class="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-400 rounded-xl p-2 sm:p-2.5 shadow-sm mb-1.5 shrink-0">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span id="m2ProblemIcon" class="text-2xl sm:text-3xl shrink-0">🌾</span>
+            <div>
+              <span class="bg-red-500 text-white font-black text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full uppercase">KASUS NYATA DAERAH (ACAK)</span>
+              <h4 id="m2ProblemTitle" class="text-xs sm:text-sm font-black text-slate-900 leading-tight">Kasus 1: Panen Melimpah Terancam Busuk</h4>
+            </div>
+          </div>
+          <p id="m2ProblemDesc" class="text-[10px] sm:text-xs text-slate-700 font-semibold leading-relaxed">
+            <!-- Terisi via JS -->
+          </p>
+        </div>
+
+        <!-- 3 Pilihan Jawaban Ramah Sentuhan IFP -->
+        <div id="m2OptionsContainer" class="grid grid-cols-1 gap-1.5">
+          <!-- Terisi via JS -->
+        </div>
+      </div>
+
+      <!-- Footer Navigasi Misi 2 -->
+      <div class="flex justify-between items-center pt-1 border-t border-slate-200 shrink-0">
+        <div class="text-[9px] sm:text-[10px] font-bold text-slate-600 flex items-center gap-1">
+          <span>🗣️</span> <span>Diskusikan bersama sebelum memilih jalan keluar terbaik!</span>
+        </div>
+        <button id="btnNextM2" onclick="Game.nextMission2Problem()" class="hidden btn-bounce bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] sm:text-xs px-4 py-1 rounded-xl shadow">
+          Lanjut Kasus Berikutnya ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 5: MISI 3 (DRAWING / SMARTBOARD WHITEBOARD) ================= -->
+    <section id="screenMission3" class="hidden h-full w-full flex flex-col justify-between p-1.5 sm:p-2 overflow-hidden">
+      <!-- Toolbar Pena Digital IFP -->
+      <div class="flex items-center justify-between border-b border-amber-200 pb-1 shrink-0 h-8 sm:h-9">
+        <div>
+          <span class="bg-purple-600 text-white font-bold text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full uppercase">Misi 3 / 3: Smartboard IFP</span>
+          <h3 class="text-xs sm:text-sm font-black text-slate-800 leading-tight inline ml-1">Hubungkan Alur & Tulis Ide</h3>
+        </div>
+
+        <!-- Palet Warna & Ketebalan Kuas -->
+        <div class="flex items-center gap-1 bg-yellow-100 px-1.5 py-0.5 rounded-lg border border-amber-300 shrink-0">
+          <button onclick="Game.setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 border border-white shadow" title="Merah"></button>
+          <button onclick="Game.setPenColor('#2563eb')" class="w-5 h-5 rounded-full bg-blue-600 border border-white shadow" title="Biru"></button>
+          <button onclick="Game.setPenColor('#10b981')" class="w-5 h-5 rounded-full bg-emerald-500 border border-white shadow" title="Hijau"></button>
+          <button onclick="Game.setPenColor('#0f172a')" class="w-5 h-5 rounded-full bg-slate-900 border border-white shadow" title="Hitam"></button>
+          
+          <div class="h-3.5 w-0.5 bg-amber-300 mx-0.5"></div>
+          <button onclick="Game.setPenSize(3)" class="btn-bounce px-1 py-0.5 bg-white rounded text-[9px] font-black border border-amber-400">Tipis</button>
+          <button onclick="Game.setPenSize(8)" class="btn-bounce px-1 py-0.5 bg-amber-300 rounded text-[9px] font-black border border-amber-500">Tebal</button>
+          <button onclick="Game.clearCanvas()" class="btn-bounce px-1.5 py-0.5 bg-red-100 hover:bg-red-200 text-red-800 rounded text-[9px] font-black border border-red-300 ml-0.5">🧹 Hapus</button>
+        </div>
+      </div>
+
+      <!-- Area Whiteboard Digital Interaktif dengan Diagram Panduan -->
+      <div class="relative flex-1 w-full my-1 bg-slate-50 rounded-xl border-2 border-dashed border-purple-400 overflow-hidden shadow-inner min-h-0">
+        <!-- Visual Latar Belakang Bagan -->
+        <div class="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 opacity-90">
+          <div class="bg-purple-100/95 border border-purple-400 text-purple-950 font-black px-2 py-0.5 rounded text-center text-[9px] sm:text-[10px] max-w-sm mx-auto shadow-sm">
+            ✍️ <strong>Tantangan:</strong> Tarik garis panah dari Produsen ke Distributor ke Konsumen!
+          </div>
+
+          <!-- 3 Titik Alur Rantai Nilai Ekonomi -->
+          <div class="grid grid-cols-3 gap-2 text-center my-auto">
+            <div class="bg-amber-100/90 border-2 border-amber-500 p-1.5 rounded-lg shadow">
+              <div class="text-xl sm:text-2xl leading-none">🌾👩‍🌾</div>
+              <div class="font-black text-amber-950 text-[10px] sm:text-xs">Petani Kebun</div>
+              <div class="text-[8px] text-amber-800 font-bold">(1. Produksi)</div>
+            </div>
+            <div class="bg-blue-100/90 border-2 border-blue-500 p-1.5 rounded-lg shadow">
+              <div class="text-xl sm:text-2xl leading-none">🚚🏬</div>
+              <div class="font-black text-blue-950 text-[10px] sm:text-xs">Koperasi Desa</div>
+              <div class="text-[8px] text-blue-800 font-bold">(2. Distribusi)</div>
+            </div>
+            <div class="bg-emerald-100/90 border-2 border-emerald-500 p-1.5 rounded-lg shadow">
+              <div class="text-xl sm:text-2xl leading-none">👨‍👩‍👧‍👦🍽️</div>
+              <div class="font-black text-emerald-950 text-[10px] sm:text-xs">Warga Konsumen</div>
+              <div class="text-[8px] text-emerald-800 font-bold">(3. Konsumsi)</div>
+            </div>
+          </div>
+
+          <div class="text-center text-[9px] font-black text-purple-800 bg-purple-100/80 rounded py-0.5">
+            Murid dapat mencoret garis alur, paraf kelompok, atau menuliskan ide produk olahan di layar!
+          </div>
+        </div>
+
+        <!-- Kanvas Interaktif Stylus & Jari -->
+        <canvas id="drawingCanvas" class="absolute inset-0 w-full h-full z-10"></canvas>
+      </div>
+
+      <!-- Footer Misi 3 -->
+      <div class="flex justify-between items-center pt-1 border-t border-slate-200 shrink-0">
+        <div class="text-[9px] sm:text-[10px] font-bold text-slate-600">
+          💡 Gunakan stylus atau jari di layar IFP untuk menarik garis penghubung.
+        </div>
+        <button onclick="Game.completeGame()" class="btn-bounce bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 text-white font-black text-[11px] sm:text-xs px-4 py-1 rounded-xl shadow border border-purple-300 flex items-center gap-1">
+          <span>Selesai & Rekap Nilai</span> 🏆
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 6: REFLECTION & REKAP SKOR AKHIR ================= -->
+    <section id="screenResults" class="hidden h-full w-full flex flex-col justify-between items-center text-center p-2 sm:p-3 overflow-hidden">
+      <div class="max-w-3xl mx-auto w-full my-auto flex flex-col items-center">
+        <div class="text-3xl sm:text-4xl mascot-hop leading-none">🎉🥇🌾</div>
+        <h2 class="text-base sm:text-xl font-black text-amber-950 mt-0.5">LUAR BIASA, PAHLAWAN EKONOMI!</h2>
+        <p class="text-[10px] sm:text-xs text-slate-700 font-bold max-w-lg leading-tight">
+          Kamu berhasil menuntaskan penyelidikan rantai ekonomi desa Sukamaju!
+        </p>
+
+        <!-- Kotak Skor dan Papan Refleksi Materi CP Fase C -->
+        <div class="grid grid-cols-2 gap-2 w-full mt-2 max-w-2xl items-stretch">
+          <!-- Total Capaian Skor & Klasemen -->
+          <div class="bg-gradient-to-br from-yellow-300 to-amber-400 p-2 rounded-xl border-2 border-yellow-500 shadow flex flex-col justify-between items-center">
+            <div>
+              <span class="text-amber-900 font-black text-[9px] uppercase tracking-wider">Total Skor Belajar</span>
+              <div id="finalScoreNumber" class="text-2xl sm:text-4xl font-black text-amber-950 my-0.5 leading-none">340</div>
+              <div id="finalRatingBadge" class="bg-white/90 text-amber-900 font-black px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] border border-amber-400 shadow-sm">
+                Predikat: Ahli Ekonomi Yahud! ⭐⭐⭐
+              </div>
+            </div>
+            <!-- Rincian Skor Tim / Klasikal -->
+            <div id="teamScoreSummary" class="w-full mt-1 pt-1 border-t border-amber-500 text-[10px] font-bold text-amber-950 text-left">
+              <!-- Terisi via JS -->
+            </div>
+          </div>
+
+          <!-- Rangkuman Refleksi IPAS (Kelas 5 SD) -->
+          <div class="bg-white p-2 rounded-xl border-2 border-blue-400 text-left shadow flex flex-col justify-between">
+            <h4 class="text-[10px] sm:text-xs font-black text-blue-900 flex items-center gap-1">
+              <span>📝</span> Refleksi IPAS (Fase C)
+            </h4>
+            <ul class="text-[9px] sm:text-[10px] font-bold text-slate-700 space-y-0.5 my-0.5">
+              <li class="flex items-start gap-1">
+                <span class="text-emerald-600">✅</span>
+                <span><strong>Produksi:</strong> Mengolah bahan mentah jadi produk bernilai tambah.</span>
+              </li>
+              <li class="flex items-start gap-1">
+                <span class="text-blue-600">✅</span>
+                <span><strong>Distribusi:</strong> Jalan layak & armada cepat mencegah hasil panen membusuk.</span>
+              </li>
+              <li class="flex items-start gap-1">
+                <span class="text-purple-600">✅</span>
+                <span><strong>Konsumsi:</strong> Membeli produk UMKM lokal memajukan ekonomi warga.</span>
+              </li>
+            </ul>
+            <div class="p-1 bg-blue-50 rounded border border-blue-200 text-[8px] sm:text-[9px] font-black text-blue-900">
+              💬 <em>Diskusi Guru: "Apa olahan khas di sekitarmu yang bisa dikembangkan?"</em>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tombol Aksi Akhir -->
+        <div class="flex flex-wrap gap-2 justify-center mt-2 shrink-0">
+          <button onclick="Game.restartGame()" class="btn-bounce bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] sm:text-xs px-4 py-1.5 rounded-xl shadow border border-emerald-300 flex items-center gap-1">
+            <span>Main Lagi / Ganti Mode</span> 🔄
+          </button>
+          <button onclick="Game.openHelpModal()" class="btn-bounce bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] sm:text-xs px-4 py-1.5 rounded-xl shadow border border-amber-300 flex items-center gap-1">
+            <span>Panduan & Capaian (CP)</span> 📘
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Dialog Umpan Balik Langsung -->
+  <div id="feedbackModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div id="feedbackCard" class="bg-white border-2 border-yellow-400 rounded-2xl p-3 sm:p-4 max-w-xs sm:max-w-sm w-full text-center shadow-2xl transform transition-transform duration-150 scale-95">
+      <div id="feedbackIcon" class="text-3xl sm:text-4xl mb-0.5">⭐</div>
+      <h3 id="feedbackTitle" class="text-sm sm:text-base font-black text-slate-800">Luar Biasa!</h3>
+      <p id="feedbackText" class="text-[10px] sm:text-xs font-bold text-slate-600 mt-0.5 leading-snug">Keputusanmu sangat membantu perekonomian desa!</p>
+      <div id="feedbackExtraPoints" class="text-emerald-600 font-black text-base mt-1">+60 Poin!</div>
+      <button onclick="Game.closeFeedbackModal()" class="btn-bounce mt-2 w-full bg-yellow-400 hover:bg-yellow-500 text-amber-950 font-black text-xs py-1.5 rounded-xl shadow border border-yellow-500">
+        Lanjutkan! 👍
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Tanya Pakar AI (Gemini API Integration) -->
+  <div id="aiModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white border-2 border-purple-500 rounded-2xl p-3 max-w-lg w-full text-left shadow-2xl max-h-[92vh] flex flex-col justify-between">
+      <div class="flex justify-between items-center border-b border-purple-200 pb-1.5 shrink-0">
+        <h3 class="text-xs sm:text-sm font-black text-purple-950 flex items-center gap-1">
+          <span>🤖</span> Tanya Pakar Ekonomi Cemerlang (AI)
+        </h3>
+        <button onclick="Game.closeAiModal()" class="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="space-y-2 mt-2 text-[10px] sm:text-xs font-medium text-slate-700 overflow-y-auto max-h-[50vh] p-1" id="aiChatContainer">
+        <div class="bg-purple-50 p-2 rounded-xl border border-purple-200 text-purple-950">
+          <strong>Pakar AI:</strong> Halo! Aku adalah asisten pakar ekonomi SD. Tanyakan apa saja seputar kegiatan jual beli, produksi, atau masalah ekonomi di daerahmu!
+        </div>
+      </div>
+
+      <div class="mt-2 shrink-0 space-y-1.5">
+        <div class="flex gap-1">
+          <input type="text" id="aiQueryInput" placeholder="Contoh: Mengapa harga cabai naik saat musim hujan?" class="flex-1 bg-slate-100 border-2 border-purple-300 rounded-xl px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:border-purple-600" onkeydown="if(event.key==='Enter') Game.sendAiQuery()">
+          <button onclick="Game.sendAiQuery()" id="aiSendBtn" class="btn-bounce bg-purple-600 hover:bg-purple-700 text-white font-black text-xs px-3 py-1 rounded-xl shadow">
+            Tanya 🚀
+          </button>
+        </div>
+        <button onclick="Game.closeAiModal()" class="btn-bounce w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-[10px] py-1 rounded-xl">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Panduan Pembelajaran CP & Info Pengembang Arga Widyatama -->
+  <div id="helpModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white border-2 border-amber-400 rounded-2xl p-3 max-w-md w-full text-left shadow-2xl max-h-[92vh] flex flex-col justify-between">
+      <div class="flex justify-between items-center border-b border-amber-200 pb-1.5 shrink-0">
+        <h3 class="text-xs sm:text-sm font-black text-amber-950 flex items-center gap-1">
+          <span>📖</span> Panduan IPAS & Info Pengembang
+        </h3>
+        <button onclick="Game.closeHelpModal()" class="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="space-y-1.5 mt-1.5 text-[10px] sm:text-xs font-medium text-slate-700 overflow-hidden">
+        <div class="bg-amber-50 p-1.5 rounded-lg border border-amber-300">
+          <h4 class="font-black text-amber-900 text-[10px] sm:text-xs">🎯 Capaian Pembelajaran (CP) Fase C (Kelas 5 SD):</h4>
+          <p class="mt-0.5 leading-snug">
+            <strong>CP:</strong> Mengevaluasi dan merefleksikan kegiatan ekonomi masyarakat di lingkungan sekitar.<br>
+            <strong>Tujuan Spesifik:</strong> Mempelajari pemecahan masalah ekonomi melalui penyelidikan 6+ skenario alur Produksi, Distribusi, dan Konsumsi dengan bank soal acak & AI Assistant.
+          </p>
+        </div>
+
+        <div class="bg-blue-50 p-1.5 rounded-lg border border-blue-300">
+          <h4 class="font-black text-blue-900 text-[10px] sm:text-xs">🖥️ Desain Interaktif 1 Layar Penuh (Zero-Scroll):</h4>
+          <ul class="list-disc list-inside space-y-0.5 mt-0.5 font-semibold text-[9px] sm:text-[10px]">
+            <li><strong>Misi 1:</strong> Seret atau sentuh 6+ kartu skenario bervariasi ke wadah acak.</li>
+            <li><strong>Misi 2:</strong> Tap-to-select alternatif solusi ekonomi daerah dari bank soal acak.</li>
+            <li><strong>Misi 3:</strong> Kanvas coret stylus/jari untuk menghubungkan alur.</li>
+            <li><strong>Fitur AI:</strong> Tanya Pakar Ekonomi Gemini API untuk diskusi kelas.</li>
+          </ul>
+        </div>
+
+        <div class="bg-emerald-50 p-1.5 rounded-lg border border-emerald-300">
+          <h4 class="font-black text-emerald-900 text-[10px] sm:text-xs">👨‍🏫 Profil Pengembang:</h4>
+          <p class="mt-0.5 text-[9px] sm:text-[10px]">
+            <strong>Arga Widyatama</strong> — Game Edukasi Interaktif HTML5 Zero-Scroll untuk Smartboard/IFP SD.
+          </p>
+        </div>
+      </div>
+
+      <button onclick="Game.closeHelpModal()" class="btn-bounce mt-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs py-1.5 rounded-xl shadow shrink-0">
+        Tutup Panduan
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. WEB AUDIO API SYNTHESIZER (100% Mandiri Tanpa URL Eksternal)
+       Nuansa Gamelan Jawa Ceria (Laras Slendro Pentatonik), Chime, Buzzer, & Fanfare
+       ========================================================================== */
+    const SoundFX = (() => {
+      let audioCtx = null;
+      let isMuted = false;
+      let bgmInterval = null;
+
+      function getContext() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContext();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      function playTone(freq, type = 'sine', duration = 0.2, gainVal = 0.12) {
+        if (isMuted) return;
+        try {
+          const ctx = getContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + duration);
+        } catch (e) {}
+      }
+
+      function playGamelanChime() {
+        if (isMuted) return;
+        const notes = [528, 594, 660, 792, 1056];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            playTone(freq, 'triangle', 0.35, 0.18);
+          }, idx * 70);
+        });
+      }
+
+      function playWrongBoing() {
+        if (isMuted) return;
+        try {
+          const ctx = getContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(65, ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.16, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } catch (e) {}
+      }
+
+      function playFanfare() {
+        if (isMuted) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((f, i) => {
+          setTimeout(() => {
+            playTone(f, 'sine', 0.4, 0.2);
+          }, i * 100);
+        });
+      }
+
+      function playClick() {
+        playTone(440, 'triangle', 0.05, 0.06);
+      }
+
+      function startBgm() {
+        if (bgmInterval || isMuted) return;
+        const slendro = [264, 297, 330, 396, 440, 528];
+        let step = 0;
+        bgmInterval = setInterval(() => {
+          if (isMuted) return;
+          const note = slendro[step % slendro.length];
+          playTone(note, 'triangle', 0.25, 0.025);
+          if (step % 4 === 0) {
+            playTone(132, 'sine', 0.5, 0.04);
+          }
+          step = (step + 1) % 16;
+        }, 480);
+      }
+
+      function stopBgm() {
+        if (bgmInterval) {
+          clearInterval(bgmInterval);
+          bgmInterval = null;
+        }
+      }
+
+      function toggleMute() {
+        isMuted = !isMuted;
+        if (isMuted) stopBgm();
+        else startBgm();
+        return isMuted;
+      }
+
+      return {
+        playClick,
+        playGamelanChime,
+        playWrongBoing,
+        playFanfare,
+        startBgm,
+        stopBgm,
+        toggleMute,
+        isMuted: () => isMuted
+      };
+    })();
+
+    /* ==========================================================================
+       2. BANK SOAL & KASUS IPAS FASE C (KELAS 5 SD) - 6+ SKENARIO MISI 1 (BANYAK KARTU & PENGECOH)
+       ========================================================================== */
+    const GAME_DATA = {
+      mission1Rounds: [
+        {
+          scenario: "🌾 Skenario 1 - Singkong: Dari kebun singkong hingga keripik renyah di meja!",
+          items: [
+            { id: "m1_1", text: "Petani menanam & memanen singkong di kebun", category: "PRODUKSI", icon: "🌱" },
+            { id: "m1_1_b", text: "Pekerja mengupas dan mengiris singkong tipis", category: "PRODUKSI", icon: "🔪" },
+            { id: "m1_dec_1", text: "Warga menimbun singkong di gudang sampai busuk", category: "KECOH", icon: "⚠️" },
+            { id: "m1_2", text: "Sopir mengantar keripik ke warung kelontong", category: "DISTRIBUSI", icon: "🚚" },
+            { id: "m1_2_b", text: "Pedagang pasar memajang keripik di etalase", category: "DISTRIBUSI", icon: "🏬" },
+            { id: "m1_dec_2", text: "Anak-anak menanam cabai di pot sekolah", category: "KECOH", icon: "🌿" },
+            { id: "m1_3", text: "Keluarga menyantap keripik bersama di rumah", category: "KONSUMSI", icon: "😋" },
+            { id: "m1_3_b", text: "Ibu membeli keripik untuk sajian arisan", category: "KONSUMSI", icon: "🛍️" }
+          ]
+        },
+        {
+          scenario: "🐟 Skenario 2 - Ikan Nelayan: Tangkapan laut segar hingga sup lezat malam hari!",
+          items: [
+            { id: "m1_4", text: "Nelayan menangkap ikan segar di laut", category: "PRODUKSI", icon: "🎣" },
+            { id: "m1_4_b", text: "Pekerja membersihkan & memberi es ikan", category: "PRODUKSI", icon: "🧊" },
+            { id: "m1_dec_3", text: "Pedagang membiarkan ikan di terik matahari", category: "KECOH", icon: "⚠️" },
+            { id: "m1_5", text: "Kurir membawa kotak ikan ke pasar induk", category: "DISTRIBUSI", icon: "🛵" },
+            { id: "m1_5_b", text: "Pedagang keliling menawarkan ikan segar", category: "DISTRIBUSI", icon: "🚲" },
+            { id: "m1_dec_4", text: "Peternak memelihara kambing di bukit", category: "KECOH", icon: "🐐" },
+            { id: "m1_6", text: "Ibu memasak sup ikan untuk keluarga", category: "KONSUMSI", icon: "🍲" },
+            { id: "m1_6_b", text: "Anak-anak makan ikan gurih bergizi", category: "KONSUMSI", icon: "👦" }
+          ]
+        },
+        {
+          scenario: "👕 Skenario 3 - Seragam Sekolah: Dari kain katun hingga dipakai upacara!",
+          items: [
+            { id: "m1_7", text: "Pabrik menenun benang menjadi kain katun", category: "PRODUKSI", icon: "🧵" },
+            { id: "m1_7_b", text: "Penjahit memotong & menjahit seragam", category: "PRODUKSI", icon: "✂️" },
+            { id: "m1_dec_5", text: "Warga membuang seragam layak ke sampah", category: "KECOH", icon: "🗑️" },
+            { id: "m1_8", text: "Kurir mengirim paket pakaian ke toko", category: "DISTRIBUSI", icon: "📦" },
+            { id: "m1_8_b", text: "Pramuniaga menata baju di rak toko", category: "DISTRIBUSI", icon: "🏬" },
+            { id: "m1_dec_6", text: "Nelayan menjaring ikan teri di pantai", category: "KECOH", icon: "🐟" },
+            { id: "m1_9", text: "Siswa memakai seragam rapi ke sekolah", category: "KONSUMSI", icon: "🎒" },
+            { id: "m1_9_b", text: "Orang tua membeli seragam baru anak", category: "KONSUMSI", icon: "👨‍👩‍👧" }
+          ]
+        },
+        {
+          scenario: "☕ Skenario 4 - Kopi Lokal: Dari lereng gunung sampai secangkir kopi hangat!",
+          items: [
+            { id: "m1_10", text: "Petani memetik & menjemur biji kopi", category: "PRODUKSI", icon: "🌿" },
+            { id: "m1_10_b", text: "Pabrik menyangrai dan menggiling kopi", category: "PRODUKSI", icon: "🔥" },
+            { id: "m1_dec_7", text: "Pembeli merusak tanaman kopi warga", category: "KECOH", icon: "⚠️" },
+            { id: "m1_11", text: "Distributor mengirim kopi bubuk ke kafe", category: "DISTRIBUSI", icon: "📦" },
+            { id: "m1_11_b", text: "Sopir truk memasok kopi ke kedai", category: "DISTRIBUSI", icon: "🚛" },
+            { id: "m1_dec_8", text: "Perajin membuat kursi dari plastik", category: "KECOH", icon: "🪑" },
+            { id: "m1_12", text: "Warga menikmati secangkir kopi hangat", category: "KONSUMSI", icon: "☕" },
+            { id: "m1_12_b", text: "Ayah minum kopi di teras rumah", category: "KONSUMSI", icon: "📰" }
+          ]
+        },
+        {
+          scenario: "🪑 Skenario 5 - Kursi Jati: Dari hutan lestari sampai ruang kelas belajar!",
+          items: [
+            { id: "m1_13", text: "Perajin memotong & merakit kayu jadi kursi", category: "PRODUKSI", icon: "🪚" },
+            { id: "m1_13_b", text: "Pekerja mengecat kursi kayu agar halus", category: "PRODUKSI", icon: "🖌️" },
+            { id: "m1_dec_9", text: "Masyarakat menebang pohon tanpa izin", category: "KECOH", icon: "🪓" },
+            { id: "m1_14", text: "Sopir mengangkut kursi ke toko mebel", category: "DISTRIBUSI", icon: "🚛" },
+            { id: "m1_14_b", text: "Kurir mengirim pesanan mebel ke sekolah", category: "DISTRIBUSI", icon: "📦" },
+            { id: "m1_dec_10", text: "Petani memanen padi di sawah subur", category: "KECOH", icon: "🌾" },
+            { id: "m1_15", text: "Sekolah memakai kursi untuk murid belajar", category: "KONSUMSI", icon: "🏫" },
+            { id: "m1_15_b", text: "Siswa duduk nyaman di kelas baru", category: "KONSUMSI", icon: "👦" }
+          ]
+        },
+        {
+          scenario: "🍞 Skenario 6 - Roti Manis Desa: Dari gandum pilihan hingga sarapan keluarga!",
+          items: [
+            { id: "m1_16", text: "Pembuat roti mencampur adonan & memanggang", category: "PRODUKSI", icon: "🥖" },
+            { id: "m1_16_b", text: "Pekerja mengemas roti dalam plastik higienis", category: "PRODUKSI", icon: "🍞" },
+            { id: "m1_dec_11", text: "Pedagang membiarkan adonan basi di lantai", category: "KECOH", icon: "⚠️" },
+            { id: "m1_17", text: "Mobil boks mengantar roti segar ke toko kue", category: "DISTRIBUSI", icon: "🚐" },
+            { id: "m1_17_b", text: "Sales menyetorkan roti ke warung desa", category: "DISTRIBUSI", icon: "📦" },
+            { id: "m1_dec_12", text: "Anak-anak bermain layangan di lapangan", category: "KECOH", icon: "🪁" },
+            { id: "m1_18", text: "Anak-anak makan roti untuk sarapan pagi", category: "KONSUMSI", icon: "👦" },
+            { id: "m1_18_b", text: "Keluarga menikmati roti sore hari", category: "KONSUMSI", icon: "☕" }
+          ]
+        }
+      ],
+
+      mission2Problems: [
+        {
+          title: "Kasus A: Panen Cabai Melimpah Harga Anjlok",
+          icon: "🌶️",
+          desc: "Petani di desa panen cabai serentak sehingga pasokan melimpah ruah dan harga jual anjlok drastis di pasar. Solusi ekonomi kreatif apa yang paling tepat?",
+          options: [
+            { text: "A. Membiarkan cabai membusuk di ladang tanpa dipanen sama sekali.", isCorrect: false, feedback: "Kurang tepat! Ini merugikan petani dan membuang hasil kerja keras." },
+            { text: "B. Mengolah cabai menjadi saus botolan siap saji dan memasarkannya secara online.", isCorrect: true, feedback: "Hebat! Pengolahan produk (hilirisasi) memberi nilai tambah dan menjaga harga!" },
+            { text: "C. Membakar seluruh ladang cabai agar warga berhenti bertani.", isCorrect: false, feedback: "Salah! Tindakan ini berbahaya dan mematikan mata pencaharian." }
+          ]
+        },
+        {
+          title: "Kasus B: Akses Jalan Desa Rusak & Jembatan Retak",
+          icon: "🚧",
+          desc: "Peternak sapi perah kesulitan menyetor susu segar ke pabrik karena jalan rusak parah. Susu sering basi di perjalanan. Solusi distribusi apa yang terbaik?",
+          options: [
+            { text: "A. Gotong royong memperbaiki jalan darurat & menggunakan mobil berpendingin.", isCorrect: true, feedback: "Tepat Sekali! Gotong royong dan fasilitas pendingin menjaga kualitas barang sampai tujuan!" },
+            { text: "B. Menjual seluruh sapi perah dan menutup peternakan warga.", isCorrect: false, feedback: "Kurang tepat! Ini memutus mata pencaharian warga desa." },
+            { text: "C. Meminta pembeli kota mendaki bukit sambil membawa ember kosong.", isCorrect: false, feedback: "Tidak efektif dan menyulitkan konsumen." }
+          ]
+        },
+        {
+          title: "Kasus C: Kerajinan Anyaman Bambu Sepi Peminat",
+          icon: "🧺",
+          desc: "Pengrajin anyaman bambu tradisional mulai sepi pembeli karena masyarakat beralih ke wadah plastik murah. Bagaimana cara memulihkan usaha mereka?",
+          options: [
+            { text: "A. Melarang keras warga membeli barang plastik dengan denda berat.", isCorrect: false, feedback: "Kurang bijak! Larangan paksaan tidak meningkatkan daya saing produk." },
+            { text: "B. Inovasi desain modern (kap lampu, tas modis) & dipasarkan via media sosial.", isCorrect: true, feedback: "Luar Biasa! Inovasi produk dan pemasaran digital memperluas jangkauan pasar!" },
+            { text: "C. Menebang habis pohon bambu di desa agar warga berhenti menganyam.", isCorrect: false, feedback: "Salah! Penebangan memicu erosi dan mematikan warisan budaya lokal." }
+          ]
+        },
+        {
+          title: "Kasus D: Sampah Pasar Tradisional Menumpuk & Bau",
+          icon: "🗑️",
+          desc: "Pasar desa tampak kotor dan berbau karena sisa sayuran dan pembungkus plastik dibuang sembarangan. Tindakan ekonomi yang tepat adalah?",
+          options: [
+            { text: "A. Menutup pasar selamanya dan melarang aktivitas jual beli.", isCorrect: false, feedback: "Salah! Menutup pasar melumpuhkan ekonomi warga." },
+            { text: "B. Membentuk bank sampah pasar, mengolah sisa sayur jadi kompos, & pilah sampah.", isCorrect: true, feedback: "Tepat Sekali! Mengubah limbah pasar menjadi kompos bernilai ekonomis dan menjaga kebersihan!" },
+            { text: "C. Membakar semua sampah plastik di tengah pasar setiap pagi.", isCorrect: false, feedback: "Berbahaya! Pembakaran sampah mencemari udara dan kesehatan warga." }
+          ]
+        }
+      ]
+    };
+
+    /* ==========================================================================
+       3. INTEGRASI GEMINI API (gemini-3-flash-preview) UNTUK TANYA PAKAR AI
+       ========================================================================== */
+    const GeminiAI = (() => {
+      async function askEconomyExpert(promptText) {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        
+        const systemPrompt = "Anda adalah Pakar Ekonomi Cemerlang, maskot AI yang ramah untuk anak kelas 5 SD (Fase C IPAS). Berikan jawaban yang singkat, mendidik, ceria, dan mudah dipahami seputar produksi, distribusi, konsumsi, dan pemecahan masalah ekonomi di daerah dalam 2-3 kalimat.";
+
+        const payload = {
+          contents: [{ parts: [{ text: promptText }] }],
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          }
+        };
+
+        let delay = 1000;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            const candidate = result.candidates?.[0];
+            if (candidate && candidate.content?.parts?.[0]?.text) {
+              return candidate.content.parts[0].text;
+            }
+          } catch (e) {
+            await new Promise(res => setTimeout(res, delay));
+            delay *= 2;
+          }
+        }
+        return "Maaf, Pakar AI sedang istirahat sejenak. Ayo diskusikan bersama guru dan temanmu!";
+      }
+
+      return { askEconomyExpert };
+    })();
+
+    /* ==========================================================================
+       4. CONTROLLER GAMEPLAY TERPADU 1 LAYAR DENGAN RANDOMIZER SKENARIO
+       ========================================================================== */
+    const Game = (() => {
+      let state = {
+        mode: 'INDIVIDU',
+        score: 0,
+        hearts: 3,
+        timerSeconds: 90,
+        timerInterval: null,
+        currentTeamIndex: 0,
+        teams: [
+          { name: 'Tim Merah', color: 'bg-red-500 text-white border-red-700', score: 0 },
+          { name: 'Tim Biru', color: 'bg-blue-600 text-white border-blue-800', score: 0 },
+          { name: 'Tim Hijau', color: 'bg-emerald-600 text-white border-emerald-800', score: 0 },
+          { name: 'Tim Kuning', color: 'bg-amber-400 text-amber-950 border-amber-600', score: 0 }
+        ],
+        mission1Queue: [],
+        mission1Index: 0,
+        m1UserAssignments: {},
+        selectedCardId: null,
+        mission2Queue: [],
+        mission2Index: 0,
+        mission2Answered: false,
+        penColor: '#2563eb',
+        penSize: 4,
+        isDrawing: false
+      };
+
+      const screens = {
+        title: document.getElementById('screenTitle'),
+        intro: document.getElementById('screenIntro'),
+        m1: document.getElementById('screenMission1'),
+        m2: document.getElementById('screenMission2'),
+        m3: document.getElementById('screenMission3'),
+        results: document.getElementById('screenResults')
+      };
+
+      function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function switchScreen(targetScreen) {
+        Object.values(screens).forEach(s => s.classList.add('hidden'));
+        targetScreen.classList.remove('hidden');
+      }
+
+      function updateScoreDisplay() {
+        const s1 = document.getElementById('currentScoreDisplay');
+        const s2 = document.getElementById('m2ScoreDisplay');
+        if (s1) s1.textContent = state.score;
+        if (s2) s2.textContent = state.score;
+
+        const teamInd = document.getElementById('teamTurnIndicator');
+        const heartsEl = document.getElementById('heartsContainer');
+        const timerEl = document.getElementById('timerContainer');
+
+        if (state.mode === 'KELOMPOK') {
+          teamInd.classList.remove('hidden');
+          const cur = state.teams[state.currentTeamIndex];
+          teamInd.className = `px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs border shadow-sm ${cur.color}`;
+          teamInd.textContent = `${cur.name} (${cur.score} Pts)`;
+        } else if (state.mode === 'KLASIKAL') {
+          teamInd.classList.remove('hidden');
+          teamInd.className = 'px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs border shadow-sm bg-purple-600 text-white border-purple-800';
+          teamInd.textContent = '🌟 Misi Kelas Bersama';
+        } else {
+          teamInd.classList.add('hidden');
+        }
+
+        const isHome = !screens.title.classList.contains('hidden') || !screens.intro.classList.contains('hidden');
+        if (isHome) {
+          heartsEl.classList.add('hidden');
+          timerEl.classList.add('hidden');
+        } else {
+          heartsEl.classList.remove('hidden');
+          timerEl.classList.remove('hidden');
+          document.getElementById('heartsText').textContent = `${state.hearts}/3`;
+        }
+      }
+
+      function addScore(points) {
+        state.score += points;
+        if (state.mode === 'KELOMPOK') {
+          state.teams[state.currentTeamIndex].score += points;
+        }
+        updateScoreDisplay();
+      }
+
+      function reduceHeart() {
+        if (state.hearts > 1) {
+          state.hearts--;
+        } else {
+          state.hearts = 3;
+        }
+        updateScoreDisplay();
+      }
+
+      function nextTeamTurn() {
+        if (state.mode === 'KELOMPOK') {
+          state.currentTeamIndex = (state.currentTeamIndex + 1) % state.teams.length;
+          updateScoreDisplay();
+        }
+      }
+
+      function startTimer(seconds = 90) {
+        clearInterval(state.timerInterval);
+        state.timerSeconds = seconds;
+        renderTimer();
+        state.timerInterval = setInterval(() => {
+          if (state.timerSeconds > 0) {
+            state.timerSeconds--;
+            renderTimer();
+          } else {
+            clearInterval(state.timerInterval);
+            SoundFX.playWrongBoing();
+            showFeedback('Waktu Sesi Berakhir!', 'Ayo selesaikan tantangan ini bersama teman-teman!', '⏱️', 0);
+          }
+        }, 1000);
+      }
+
+      function renderTimer() {
+        const mins = Math.floor(state.timerSeconds / 60);
+        const secs = state.timerSeconds % 60;
+        const text = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const el = document.getElementById('timerText');
+        if (el) el.textContent = text;
+      }
+
+      function loadMission1Round(roundIdx) {
+        state.mission1Index = roundIdx;
+        state.m1UserAssignments = {};
+        state.selectedCardId = null;
+
+        const roundData = state.mission1Queue[roundIdx];
+        document.getElementById('m1ScenarioBanner').innerHTML = `<strong>Skenario:</strong> ${roundData.scenario}`;
+        document.getElementById('m1RoundDisplay').textContent = `${roundIdx + 1}/${state.mission1Queue.length}`;
+
+        document.querySelectorAll('.drop-zone .zone-slot').forEach(slot => {
+          slot.innerHTML = `<span class="placeholder-text text-[9px] font-bold text-slate-400 m-auto leading-tight">Ketuk/Seret ke sini</span>`;
+        });
+
+        const pool = document.getElementById('m1CardsContainer');
+        pool.innerHTML = '';
+
+        const shuffledItems = shuffleArray(roundData.items);
+
+        shuffledItems.forEach(item => {
+          const card = document.createElement('div');
+          card.id = `card_${item.id}`;
+          card.dataset.itemId = item.id;
+          card.dataset.category = item.category;
+          card.draggable = true;
+          card.className = 'draggable-card btn-bounce bg-white border-2 border-amber-400 rounded-lg px-2 py-1 shadow-sm flex items-center gap-1 min-h-[36px] max-w-[220px] hover:bg-yellow-50';
+          card.innerHTML = `
+            <span class="text-base shrink-0 leading-none">${item.icon}</span>
+            <span class="text-[9px] font-black text-slate-800 leading-tight">${item.text}</span>
+          `;
+
+          card.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', item.id);
+            card.classList.add('opacity-50');
+            SoundFX.playClick();
+          });
+          card.addEventListener('dragend', () => {
+            card.classList.remove('opacity-50');
+          });
+
+          card.addEventListener('click', () => {
+            SoundFX.playClick();
+            if (state.selectedCardId === item.id) {
+              state.selectedCardId = null;
+              card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+            } else {
+              document.querySelectorAll('.draggable-card').forEach(c => c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50'));
+              state.selectedCardId = item.id;
+              card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+            }
+          });
+
+          pool.appendChild(card);
+        });
+
+        setupDropZones();
+      }
+
+      function setupDropZones() {
+        const dropZones = document.querySelectorAll('.drop-zone');
+        dropZones.forEach(zone => {
+          zone.ondragover = (e) => {
+            e.preventDefault();
+            zone.classList.add('dragover');
+          };
+          zone.ondragleave = () => {
+            zone.classList.remove('dragover');
+          };
+          zone.ondrop = (e) => {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            const itemId = e.dataTransfer.getData('text/plain');
+            if (itemId) assignItemToCategory(itemId, zone.dataset.targetCategory);
+          };
+
+          zone.onclick = () => {
+            if (state.selectedCardId) {
+              assignItemToCategory(state.selectedCardId, zone.dataset.targetCategory);
+              state.selectedCardId = null;
+              document.querySelectorAll('.draggable-card').forEach(c => c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50'));
+            }
+          };
+        });
+      }
+
+      function assignItemToCategory(itemId, category) {
+        state.m1UserAssignments[itemId] = category;
+        SoundFX.playClick();
+
+        const card = document.getElementById(`card_${itemId}`);
+        const zone = document.querySelector(`.drop-zone[data-target-category="${category}"] .zone-slot`);
+        if (!card || !zone) return;
+
+        const placeholder = zone.querySelector('.placeholder-text');
+        if (placeholder) placeholder.remove();
+
+        zone.appendChild(card);
+        card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+        card.classList.add('scale-95', 'bg-emerald-50');
+      }
+
+      function resetCurrentMission1() {
+        SoundFX.playClick();
+        loadMission1Round(state.mission1Index);
+      }
+
+      function checkMission1() {
+        const roundData = state.mission1Queue[state.mission1Index];
+        const validItems = roundData.items.filter(i => i.category !== 'KECOH');
+        const totalValid = validItems.length;
+
+        let hasDecoyError = false;
+        roundData.items.forEach(item => {
+          if (item.category === 'KECOH' && state.m1UserAssignments[item.id]) {
+            hasDecoyError = true;
+          }
+        });
+
+        if (hasDecoyError) {
+          reduceHeart();
+          SoundFX.playWrongBoing();
+          showFeedback('Ada Pilihan Keliru!', 'Kartu dengan tanda peringatan (⚠️) bukan bagian dari rantai ekonomi yang benar! Singkirkan atau jangan masukkan kartu tersebut.', '⚠️', 0);
+          return;
+        }
+
+        let correct = 0;
+        validItems.forEach(item => {
+          if (state.m1UserAssignments[item.id] === item.category) {
+            correct++;
+          }
+        });
+
+        const assignedValidCount = validItems.filter(i => state.m1UserAssignments[i.id]).length;
+
+        if (assignedValidCount < totalValid) {
+          showFeedback('Kartu Belum Lengkap!', 'Susun semua kartu rantai utama ke wadah Produksi, Distribusi, atau Konsumsi dulu ya!', '⚠️', 0);
+          SoundFX.playWrongBoing();
+          return;
+        }
+
+        if (correct === totalValid) {
+          const pointsWon = 60;
+          addScore(pointsWon);
+          SoundFX.playGamelanChime();
+          showFeedback('Hebat Sekali!', `Skenario ${state.mission1Index + 1} tuntas! Rantai pasok desa lancar. (+${pointsWon} Poin)`, '🎉', pointsWon, () => {
+            if (state.mission1Index + 1 < state.mission1Queue.length) {
+              nextTeamTurn();
+              loadMission1Round(state.mission1Index + 1);
+            } else {
+              startMission2();
+            }
+          });
+        } else {
+          reduceHeart();
+          SoundFX.playWrongBoing();
+          showFeedback('Perlu Diteliti Lagi!', `Ada penempatan kategori yang belum tepat. Ingat: Produksi membuat, Distribusi mengantar, Konsumsi memakai. Coba lagi!`, '🤔', 0);
+        }
+      }
+
+      function startMission2() {
+        switchScreen(screens.m2);
+        state.mission2Queue = shuffleArray(GAME_DATA.mission2Problems).slice(0, 4);
+        state.mission2Index = 0;
+        loadMission2Problem(0);
+        startTimer(90);
+      }
+
+      function loadMission2Problem(problemIdx) {
+        state.mission2Index = problemIdx;
+        state.mission2Answered = false;
+
+        const prob = state.mission2Queue[problemIdx];
+        document.getElementById('m2ProblemTitle').textContent = prob.title;
+        document.getElementById('m2ProblemIcon').textContent = prob.icon;
+        document.getElementById('m2ProblemDesc').textContent = prob.desc;
+        document.getElementById('m2RoundCounter').textContent = `${problemIdx + 1}/${state.mission2Queue.length}`;
+        document.getElementById('btnNextM2').classList.add('hidden');
+
+        const optContainer = document.getElementById('m2OptionsContainer');
+        optContainer.innerHTML = '';
+
+        const shuffledOptions = shuffleArray(prob.options);
+
+        shuffledOptions.forEach((opt) => {
+          const btn = document.createElement('button');
+          btn.className = 'btn-bounce w-full text-left px-2.5 py-1.5 rounded-xl border-2 border-slate-300 bg-white hover:border-amber-400 hover:bg-yellow-50 text-slate-800 font-bold text-[10px] sm:text-xs shadow-sm transition-all flex items-center justify-between min-h-[38px] sm:min-h-[44px]';
+          btn.innerHTML = `
+            <span class="leading-snug pr-2">${opt.text}</span>
+            <span class="text-base shrink-0">👉</span>
+          `;
+
+          btn.onclick = () => {
+            if (state.mission2Answered) return;
+            selectMission2Option(btn, opt);
+          };
+
+          optContainer.appendChild(btn);
+        });
+      }
+
+      function selectMission2Option(buttonEl, option) {
+        state.mission2Answered = true;
+        const allButtons = document.querySelectorAll('#m2OptionsContainer button');
+        allButtons.forEach(b => b.disabled = true);
+
+        if (option.isCorrect) {
+          buttonEl.classList.remove('border-slate-300', 'bg-white', 'hover:border-amber-400');
+          buttonEl.classList.add('border-emerald-500', 'bg-emerald-100', 'text-emerald-950', 'ring-2', 'ring-emerald-400');
+          const pointsWon = 70;
+          addScore(pointsWon);
+          SoundFX.playGamelanChime();
+
+          showFeedback('Keputusan Cerdas!', `${option.feedback} (+${pointsWon} Poin)`, '🌟', pointsWon, () => {
+            prepareNextOrCompleteM2();
+          });
+        } else {
+          reduceHeart();
+          buttonEl.classList.remove('border-slate-300', 'bg-white');
+          buttonEl.classList.add('border-red-500', 'bg-red-100', 'text-red-950');
+          SoundFX.playWrongBoing();
+
+          showFeedback('Kurang Tepat!', `${option.feedback}`, '❌', 0, () => {
+            prepareNextOrCompleteM2();
+          });
+        }
+      }
+
+      function prepareNextOrCompleteM2() {
+        if (state.mission2Index + 1 < state.mission2Queue.length) {
+          nextTeamTurn();
+          document.getElementById('btnNextM2').classList.remove('hidden');
+        } else {
+          startMission3();
+        }
+      }
+
+      function nextMission2Problem() {
+        SoundFX.playClick();
+        loadMission2Problem(state.mission2Index + 1);
+      }
+
+      let canvas, ctx;
+
+      function startMission3() {
+        switchScreen(screens.m3);
+        startTimer(120);
+        setTimeout(initCanvas, 100);
+      }
+
+      function initCanvas() {
+        canvas = document.getElementById('drawingCanvas');
+        if (!canvas) return;
+        ctx = canvas.getContext('2d');
+
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        canvas.onmousedown = (e) => startDraw(e.offsetX, e.offsetY);
+        canvas.onmousemove = (e) => draw(e.offsetX, e.offsetY);
+        window.onmouseup = stopDraw;
+
+        canvas.ontouchstart = (e) => {
+          e.preventDefault();
+          const t = e.touches[0];
+          const b = canvas.getBoundingClientRect();
+          startDraw(t.clientX - b.left, t.clientY - b.top);
+        };
+        canvas.ontouchmove = (e) => {
+          e.preventDefault();
+          const t = e.touches[0];
+          const b = canvas.getBoundingClientRect();
+          draw(t.clientX - b.left, t.clientY - b.top);
+        };
+        canvas.ontouchend = stopDraw;
+      }
+
+      function startDraw(x, y) {
+        state.isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      }
+
+      function draw(x, y) {
+        if (!state.isDrawing) return;
+        ctx.strokeStyle = state.penColor;
+        ctx.lineWidth = state.penSize;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+
+      function stopDraw() {
+        state.isDrawing = false;
+      }
+
+      function setPenColor(colorHex) {
+        SoundFX.playClick();
+        state.penColor = colorHex;
+      }
+
+      function setPenSize(size) {
+        SoundFX.playClick();
+        state.penSize = size;
+      }
+
+      function clearCanvas() {
+        SoundFX.playClick();
+        if (ctx && canvas) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      function completeGame() {
+        clearInterval(state.timerInterval);
+        SoundFX.playFanfare();
+        addScore(100);
+        switchScreen(screens.results);
+
+        document.getElementById('finalScoreNumber').textContent = state.score;
+
+        let badge = 'Pahlawan Ekonomi Cemerlang! ⭐⭐⭐';
+        if (state.score >= 420) badge = 'Master Ekonomi Yahud Juara! 🏆⭐⭐⭐';
+        else if (state.score < 280) badge = 'Sahabat Ekonomi Mandiri! ⭐⭐';
+        document.getElementById('finalRatingBadge').textContent = `Predikat: ${badge}`;
+
+        const teamSummaryEl = document.getElementById('teamScoreSummary');
+        if (state.mode === 'KELOMPOK') {
+          const sorted = [...state.teams].sort((a, b) => b.score - a.score);
+          let html = `<div class="font-black mb-0.5">🏁 Peringkat Tim:</div>`;
+          sorted.forEach((t, i) => {
+            html += `<div class="flex justify-between py-0.2 border-b border-amber-400/50"><span>${i + 1}. ${t.name}</span><span class="font-extrabold">${t.score} Pts</span></div>`;
+          });
+          teamSummaryEl.innerHTML = html;
+        } else if (state.mode === 'KLASIKAL') {
+          teamSummaryEl.innerHTML = `<span class="text-emerald-900 font-extrabold">🤝 Target Klasikal Sukses! Seluruh kelas kompak memulihkan ekonomi desa.</span>`;
+        } else {
+          teamSummaryEl.innerHTML = `<span>Selamat! Kamu berhasil menuntaskan seluruh tantangan ekonomi secara mandiri dengan sangat baik.</span>`;
+        }
+      }
+
+      function restartGame() {
+        clearInterval(state.timerInterval);
+        SoundFX.playClick();
+        state.score = 0;
+        state.hearts = 3;
+        state.teams.forEach(t => t.score = 0);
+        state.currentTeamIndex = 0;
+        updateScoreDisplay();
+        switchScreen(screens.title);
+      }
+
+      let pendingModalCallback = null;
+
+      function showFeedback(title, text, icon, points, callback = null) {
+        document.getElementById('feedbackTitle').textContent = title;
+        document.getElementById('feedbackText').textContent = text;
+        document.getElementById('feedbackIcon').textContent = icon;
+        const ptsEl = document.getElementById('feedbackExtraPoints');
+        if (points > 0) {
+          ptsEl.textContent = `+${points} Poin!`;
+          ptsEl.classList.remove('hidden');
+        } else {
+          ptsEl.classList.add('hidden');
+        }
+        pendingModalCallback = callback;
+
+        const modal = document.getElementById('feedbackModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          document.getElementById('feedbackCard').classList.remove('scale-95');
+          document.getElementById('feedbackCard').classList.add('scale-100');
+        }, 10);
+      }
+
+      function closeFeedbackModal() {
+        SoundFX.playClick();
+        const card = document.getElementById('feedbackCard');
+        card.classList.remove('scale-100');
+        card.classList.add('scale-95');
+        setTimeout(() => {
+          document.getElementById('feedbackModal').classList.add('hidden');
+          if (pendingModalCallback) {
+            const cb = pendingModalCallback;
+            pendingModalCallback = null;
+            cb();
+          }
+        }, 100);
+      }
+
+      function openHelpModal() {
+        SoundFX.playClick();
+        document.getElementById('helpModal').classList.remove('hidden');
+      }
+
+      function closeHelpModal() {
+        SoundFX.playClick();
+        document.getElementById('helpModal').classList.add('hidden');
+      }
+
+      function openAiModal() {
+        SoundFX.playClick();
+        document.getElementById('aiModal').classList.remove('hidden');
+      }
+
+      function closeAiModal() {
+        SoundFX.playClick();
+        document.getElementById('aiModal').classList.add('hidden');
+      }
+
+      async function sendAiQuery() {
+        const input = document.getElementById('aiQueryInput');
+        const query = input.value.trim();
+        if (!query) return;
+
+        SoundFX.playClick();
+        const chatContainer = document.getElementById('aiChatContainer');
+        
+        chatContainer.innerHTML += `
+          <div class="bg-blue-50 p-2 rounded-xl border border-blue-200 text-blue-950 text-right">
+            <strong>Kamu:</strong> ${query}
+          </div>
+        `;
+        input.value = '';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        const loadingId = 'loading_' + Date.now();
+        chatContainer.innerHTML += `
+          <div id="${loadingId}" class="bg-purple-50 p-2 rounded-xl border border-purple-200 text-purple-950 italic">
+            <strong>Pakar AI:</strong> Sedang berpikir... 💭
+          </div>
+        `;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        const aiResponse = await GeminiAI.askEconomyExpert(query);
+
+        document.getElementById(loadingId).remove();
+        chatContainer.innerHTML += `
+          <div class="bg-purple-50 p-2 rounded-xl border border-purple-200 text-purple-950">
+            <strong>Pakar AI:</strong> ${aiResponse}
+          </div>
+        `;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      function selectMode(selectedMode) {
+        SoundFX.playClick();
+        state.mode = selectedMode;
+        SoundFX.startBgm();
+        updateScoreDisplay();
+        switchScreen(screens.intro);
+      }
+
+      function startMission1() {
+        SoundFX.playClick();
+        state.mission1Queue = shuffleArray(GAME_DATA.mission1Rounds);
+        switchScreen(screens.m1);
+        loadMission1Round(0);
+        startTimer(120);
+      }
+
+      function init() {
+        updateScoreDisplay();
+
+        document.getElementById('btnAudioToggle').onclick = () => {
+          const isMuted = SoundFX.toggleMute();
+          document.getElementById('audioIcon').textContent = isMuted ? '🔇' : '🔊';
+        };
+
+        document.getElementById('btnHelpModal').onclick = openHelpModal;
+        document.getElementById('btnHome').onclick = () => {
+          SoundFX.playClick();
+          clearInterval(state.timerInterval);
+          switchScreen(screens.title);
+        };
+
+        window.addEventListener('resize', () => {
+          if (!screens.m3.classList.contains('hidden')) {
+            initCanvas();
+          }
+        });
+      }
+
+      return {
+        init,
+        selectMode,
+        startMission1,
+        startMission2,
+        startMission3,
+        loadMission1Round,
+        resetCurrentMission1,
+        checkMission1,
+        nextMission2Problem,
+        setPenColor,
+        setPenSize,
+        clearCanvas,
+        completeGame,
+        restartGame,
+        closeFeedbackModal,
+        openHelpModal,
+        closeHelpModal,
+        openAiModal,
+        closeAiModal,
+        sendAiQuery
+      };
+    })();
+
+    window.onload = () => {
+      Game.init();
+    };
+  </script>
+</body>
+</html>
